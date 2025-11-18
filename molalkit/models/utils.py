@@ -18,7 +18,7 @@ def get_model(data_format: Literal["mgktools", "chemprop", "graphgps"],
               # arguments for classical machine learning models
               model: Literal["random_forest", "naive_bayes", "logistic_regression", "gaussian_process_regression",
                              "gaussian_process_classification", "support_vector_machine", "adaboost", "xgboost",
-                             "decision_tree", "extra_trees", "deep_forest", "MultinomialNB", "BernoulliNB", "GaussianNB",
+                             "decision_tree", "extra_trees", "deep_forest", "neural_decision_forest", "MultinomialNB", "BernoulliNB", "GaussianNB",
                              "LSTM", "GRU", "MolFormer"] = "random_forest",
               kernel=None,
               uncertainty_type: Literal["value", "uncertainty"] = None,
@@ -144,6 +144,36 @@ def get_model(data_format: Literal["mgktools", "chemprop", "graphgps"],
                 n_jobs=n_jobs,           # Parallel jobs (aligned with RF)
                 random_state=seed,       # Random seed (aligned with RF)
                 verbose=0                # Silent mode for active learning (no training logs)
+            )
+        elif model == "neural_decision_forest":
+            assert task_type == "binary", "Neural Decision Forest currently only supports binary classification in MolALKit"
+            from molalkit.models.neural_decision_forest.NDFClassifier import NDFClassifier
+            # Neural Decision Forest parameters aligned with Random Forest
+            # Key features:
+            #   - Soft routing: differentiable decision paths using sigmoid
+            #   - Learnable leaf distributions: jointly optimized via backpropagation (jointly_training=True)
+            #   - Feature subsampling: each tree uses tree_feature_rate of features (default: 0.5)
+            # Alignment with Random Forest:
+            #   - n_estimators=100 (aligned with RF)
+            #   - tree_depth: adaptive based on sample size (aligned with RF's adaptive depth)
+            #     • depth=6 for <500 samples (64 leaf nodes)
+            #     • depth=10 for ≥500 samples (1024 leaf nodes)
+            # NDF-specific parameters:
+            #   - jointly_training=True (essential for learning, prevents [0.5, 0.5] predictions)
+            #   - epochs: max 80 for neural network training
+            #   - batch_size: 16 to match active learning batch
+            return NDFClassifier(
+                n_estimators=n_estimators,  # 100 trees (aligned with Random Forest)
+                tree_depth=None,         # Adaptive: 6 for <500 samples, 10 for ≥500 samples
+                tree_feature_rate=0.5,   # Use 50% of features per tree
+                n_class=2,               # Binary classification
+                jointly_training=True,   # End-to-end: jointly optimize routing and leaf distributions
+                epochs=min(epochs if epochs != 30 else 80, 80),  # Max 80 epochs for NN training
+                batch_size=batch_size if batch_size != 50 else 16,  # Batch size 16 for active learning
+                lr=learning_rate if learning_rate != 0.1 else 0.001,  # Learning rate (default: 0.001)
+                weight_decay=weight_decay if weight_decay != 0.0 else 1e-3,  # L2 regularization (1e-3)
+                device=None,             # Auto-detect (use CUDA if available)
+                random_state=seed        # Random seed (aligned with other models)
             )
         elif model == "gaussian_process_regression":
             assert task_type in ["regression", "binary"]
