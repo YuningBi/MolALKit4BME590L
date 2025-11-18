@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from deepforest import CascadeForestClassifier
+# Use standalone Deep Forest implementation (no C extensions required)
+from .deepforest_src import CascadeForestClassifier
 from molalkit.models.base import BaseSklearnModel
 
 
