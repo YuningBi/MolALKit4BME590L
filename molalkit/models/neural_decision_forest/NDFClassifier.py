@@ -76,15 +76,8 @@ class NDFClassifier(BaseModel):
 
     def _create_model(self, n_features):
         """Create a new NeuralDecisionForest model instance."""
-        # Import here to avoid circular dependency
-        import sys
-        import os
-        # Add project root to path to import NeuralDecisionForest
-        project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
-        if project_root not in sys.path:
-            sys.path.insert(0, project_root)
-
-        from NeuralDecisionForest import NeuralDecisionForest
+        # Import from same directory
+        from .NeuralDecisionForest import NeuralDecisionForest
 
         model = NeuralDecisionForest(
             n_features=n_features,
