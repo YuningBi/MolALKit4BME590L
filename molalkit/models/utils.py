@@ -140,7 +140,7 @@ def get_model(data_format: Literal["mgktools", "chemprop", "graphgps"],
                 criterion='gini',        # Aligned with RF default
                 n_tolerant_rounds=5,     # Relaxed: allow 5 rounds without improvement (was 2)
                 delta=1e-6,              # Relaxed: lower improvement threshold (was 1e-5)
-                backend='custom',        # Use optimized backend (faster than 'sklearn')
+                backend='sklearn',       # Use sklearn backend (custom backend has oob_decision_function_ bug)
                 n_jobs=n_jobs,           # Parallel jobs (aligned with RF)
                 random_state=seed,       # Random seed (aligned with RF)
                 verbose=0                # Silent mode for active learning (no training logs)
