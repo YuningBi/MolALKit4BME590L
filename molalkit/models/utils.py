@@ -163,7 +163,7 @@ def get_model(data_format: Literal["mgktools", "chemprop", "graphgps"],
             #   - epochs: max 80 for neural network training
             #   - batch_size: 16 to match active learning batch
             return NDFClassifier(
-                n_estimators=n_estimators if n_estimators != 100 else 50,  # 50 trees (reduced for memory)
+                n_estimators=n_estimators,  # 100 trees (aligned with Random Forest)
                 tree_depth=None,         # Adaptive: 6 for <500 samples, 10 for ≥500 samples
                 tree_feature_rate=0.5,   # Use 50% of features per tree
                 n_class=2,               # Binary classification
