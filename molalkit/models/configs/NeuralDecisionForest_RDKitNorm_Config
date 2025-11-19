@@ -1,0 +1,11 @@
+{
+    "data_format": "mgktools",
+    "model": "neural_decision_forest",
+    "fingerprints_class": [
+        "rdkit_2d_normalized"
+    ],
+    "epochs": 80,
+    "batch_size": 16,
+    "learning_rate": 0.001,
+    "weight_decay": 0.001
+}
