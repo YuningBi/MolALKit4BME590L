@@ -126,15 +126,15 @@ def get_model(data_format: Literal["mgktools", "chemprop", "graphgps"],
             # Key differences from RF:
             #   - n_estimators: RF=100 (total trees), DF=8 (trees per layer per forest)
             #   - Each DF layer has 2 forests (RF+ExtraTrees), so 8×2=16 trees per layer
-            #   - max_layers=10 with relaxed early stopping for imbalanced data
+            #   - max_layers=8 for controlled cascade depth
+            #   - max_depth=8 for limited tree depth (prevents overfitting)
             # Relaxed early stopping parameters:
             #   - n_tolerant_rounds increased from 2→5 to handle validation score fluctuations
             #   - delta reduced from 1e-5→1e-6 to accept smaller improvements
-            #   - max_depth=None to align with RF (unlimited tree depth)
             return DFClassifier(
-                n_estimators=n_estimators if n_estimators != 100 else 8,  # 8 trees per layer (increased for stability)
-                max_layers=10,           # Maximum cascade depth
-                max_depth=max_depth,     # Tree depth (aligned with RF, default: None)
+                n_estimators=n_estimators if n_estimators != 100 else 8,  # 8 trees per layer per forest
+                max_layers=8,            # Maximum cascade depth (8 layers)
+                max_depth=8,             # Tree depth limit (8)
                 min_samples_split=2,     # Aligned with RF default
                 min_samples_leaf=1,      # Aligned with RF default
                 criterion='gini',        # Aligned with RF default
