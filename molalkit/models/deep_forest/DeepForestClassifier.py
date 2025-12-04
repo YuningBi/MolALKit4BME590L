@@ -182,4 +182,14 @@ class DFClassifier(BaseSklearnModel):
         probabilities : np.ndarray
             Probability of positive class for each sample, shape (n_samples,).
         """
-        return self.predict_value_c(pred_data, self)
+        X = pred_data.X
+        proba = self.predict_proba(X)
+
+        # DeepForest may return shape (n_samples, 1) for binary classification
+        # when only one class is present during training
+        if proba.shape[1] == 1:
+            # Assuming single column is probability of class 1
+            return proba[:, 0]
+        else:
+            # Standard binary classification with 2 columns
+            return proba[:, 1]

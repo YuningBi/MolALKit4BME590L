@@ -7,8 +7,8 @@
     "radius": 2,
     "num_bits": 1024,
     "features_combination": "concat",
-    "epochs": 50,
+    "epochs": 32,
     "batch_size": 16,
-    "learning_rate": 0.0001,
+    "learning_rate": 0.001,
     "weight_decay": 0.001
 }

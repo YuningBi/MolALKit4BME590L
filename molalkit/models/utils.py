@@ -122,28 +122,18 @@ def get_model(data_format: Literal["mgktools", "chemprop", "graphgps"],
         elif model == "deep_forest":
             assert task_type == "binary", "Deep Forest currently only supports binary classification in MolALKit"
             from molalkit.models.deep_forest.DeepForestClassifier import DFClassifier
-            # Deep Forest parameters optimized for extremely imbalanced datasets (1-2% positive class)
-            # Key differences from RF:
-            #   - n_estimators: RF=100 (total trees), DF=8 (trees per layer per forest)
-            #   - Each DF layer has 2 forests (RF+ExtraTrees), so 8×2=16 trees per layer
-            #   - max_layers=8 for controlled cascade depth
-            #   - max_depth=8 for limited tree depth (prevents overfitting)
-            # Relaxed early stopping parameters:
-            #   - n_tolerant_rounds increased from 2→5 to handle validation score fluctuations
-            #   - delta reduced from 1e-5→1e-6 to accept smaller improvements
+            # Deep Forest (Cascade Forest) parameters
+            # Structure: each layer has n_estimators × 2 forests (RF + ExtraTrees), each with n_trees trees
+            # Config: n_estimators=5, n_trees=10 → 5×2×10 = 100 trees per layer (same as RF)
             return DFClassifier(
-                n_estimators=n_estimators if n_estimators != 100 else 8,  # 8 trees per layer per forest
-                max_layers=8,            # Maximum cascade depth (8 layers)
-                max_depth=8,             # Tree depth limit (8)
-                min_samples_split=2,     # Aligned with RF default
-                min_samples_leaf=1,      # Aligned with RF default
-                criterion='gini',        # Aligned with RF default
-                n_tolerant_rounds=5,     # Relaxed: allow 5 rounds without improvement (was 2)
-                delta=1e-6,              # Relaxed: lower improvement threshold (was 1e-5)
-                backend='sklearn',       # Use sklearn backend (custom backend has oob_decision_function_ bug)
-                n_jobs=n_jobs,           # Parallel jobs (aligned with RF)
-                random_state=seed,       # Random seed (aligned with RF)
-                verbose=0                # Silent mode for active learning (no training logs)
+                n_estimators=n_estimators if n_estimators != 100 else 5,  # 5 groups per layer (×2 = 10 forests)
+                n_trees=10,              # 10 trees per forest → 100 trees per layer
+                max_layers=10,           # Maximum 10 cascade layers
+                n_tolerant_rounds=3,     # Early stopping: stop after 3 rounds without improvement
+                backend='sklearn',       # Use sklearn backend
+                n_jobs=n_jobs,
+                random_state=seed,
+                verbose=0
             )
         elif model == "neural_decision_forest":
             assert task_type == "binary", "Neural Decision Forest currently only supports binary classification in MolALKit"
