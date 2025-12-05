@@ -124,11 +124,12 @@ def get_model(data_format: Literal["mgktools", "chemprop", "graphgps"],
             from molalkit.models.deep_forest.DeepForestClassifier import DFClassifier
             # Deep Forest (Cascade Forest) parameters
             # Structure: each layer has n_estimators × 2 forests (RF + ExtraTrees), each with n_trees trees
-            # Config: n_estimators=5, n_trees=10 → 5×2×10 = 100 trees per layer (same as RF)
+            # Config: n_estimators=2, n_trees=25 → 2×2×25 = 100 trees per layer (same as RF)
             return DFClassifier(
-                n_estimators=n_estimators if n_estimators != 100 else 5,  # 5 groups per layer (×2 = 10 forests)
-                n_trees=10,              # 10 trees per forest → 100 trees per layer
-                max_layers=10,           # Maximum 10 cascade layers
+                n_estimators=2,          # 2 groups per layer (×2 = 4 forests)
+                n_trees=25,              # 25 trees per forest → 100 trees per layer
+                max_layers=5,            # Maximum 5 cascade layers
+                max_depth=None,          # No depth limit
                 n_tolerant_rounds=3,     # Early stopping: stop after 3 rounds without improvement
                 backend='sklearn',       # Use sklearn backend
                 n_jobs=n_jobs,
