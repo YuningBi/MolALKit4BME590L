@@ -139,32 +139,20 @@ def get_model(data_format: Literal["mgktools", "chemprop", "graphgps"],
         elif model == "neural_decision_forest":
             assert task_type == "binary", "Neural Decision Forest currently only supports binary classification in MolALKit"
             from molalkit.models.neural_decision_forest.NDFClassifier import NDFClassifier
-            # Neural Decision Forest parameters aligned with Random Forest
-            # Key features:
-            #   - Soft routing: differentiable decision paths using sigmoid
-            #   - Learnable leaf distributions: jointly optimized via backpropagation (jointly_training=True)
-            #   - Feature subsampling: each tree uses tree_feature_rate of features (default: 0.5)
-            # Alignment with Random Forest:
-            #   - n_estimators=100 (aligned with RF)
-            #   - tree_depth: adaptive based on sample size (aligned with RF's adaptive depth)
-            #     • depth=6 for <500 samples (64 leaf nodes)
-            #     • depth=10 for ≥500 samples (1024 leaf nodes)
-            # NDF-specific parameters:
-            #   - jointly_training=True (essential for learning, prevents [0.5, 0.5] predictions)
-            #   - epochs: max 80 for neural network training
-            #   - batch_size: 16 to match active learning batch
+            # Neural Decision Forest: differentiable soft decision trees with gradient descent training
+            # Config: 30 trees (jointly trained), depth=5 (32 leaves)
             return NDFClassifier(
-                n_estimators=n_estimators,  # 100 trees (aligned with Random Forest)
-                tree_depth=None,         # Adaptive: 6 for <500 samples, 10 for ≥500 samples
-                tree_feature_rate=0.5,   # Use 50% of features per tree
-                n_class=2,               # Binary classification
-                jointly_training=True,   # End-to-end: jointly optimize routing and leaf distributions
-                epochs=min(epochs if epochs != 30 else 80, 80),  # Max 80 epochs for NN training
-                batch_size=batch_size if batch_size != 50 else 16,  # Batch size 16 for active learning
-                lr=learning_rate if learning_rate != 0.1 else 0.001,  # Learning rate (default: 0.001)
-                weight_decay=weight_decay if weight_decay != 0.0 else 1e-3,  # L2 regularization (1e-3)
-                device=None,             # Auto-detect (use CUDA if available)
-                random_state=seed        # Random seed (aligned with other models)
+                n_estimators=30,            # 30 trees (jointly trained)
+                tree_depth=5,               # Fixed depth=5 (32 leaves)
+                tree_feature_rate=0.3,      # Use 30% of features per tree (more diversity)
+                n_class=2,                  # Binary classification
+                jointly_training=True,      # End-to-end training (essential)
+                epochs=30,                  # Training epochs
+                batch_size=32,              # Batch size
+                lr=0.001,                   # Learning rate
+                weight_decay=1e-3,          # L2 regularization
+                device=None,                # Auto-detect GPU/CPU
+                random_state=seed
             )
         elif model == "gaussian_process_regression":
             assert task_type in ["regression", "binary"]
