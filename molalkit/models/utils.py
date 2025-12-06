@@ -140,16 +140,16 @@ def get_model(data_format: Literal["mgktools", "chemprop", "graphgps"],
             assert task_type == "binary", "Neural Decision Forest currently only supports binary classification in MolALKit"
             from molalkit.models.neural_decision_forest.NDFClassifier import NDFClassifier
             # Neural Decision Forest: differentiable soft decision trees with gradient descent training
-            # Config: 30 trees (jointly trained), depth=5 (32 leaves)
+            # Config: 100 trees (jointly trained), depth=5 (32 leaves)
             return NDFClassifier(
-                n_estimators=30,            # 30 trees (jointly trained)
+                n_estimators=100,           # 100 trees (aligned with RF)
                 tree_depth=5,               # Fixed depth=5 (32 leaves)
                 tree_feature_rate=0.3,      # Use 30% of features per tree (more diversity)
                 n_class=2,                  # Binary classification
                 jointly_training=True,      # End-to-end training (essential)
-                epochs=30,                  # Training epochs
-                batch_size=32,              # Batch size
-                lr=0.001,                   # Learning rate
+                epochs=50,                  # Training epochs
+                batch_size=16,              # Batch size (smaller for more gradient updates)
+                lr=0.01,                    # Learning rate (larger for faster convergence)
                 weight_decay=1e-3,          # L2 regularization
                 device=None,                # Auto-detect GPU/CPU
                 random_state=seed
